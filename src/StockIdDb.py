@@ -38,7 +38,7 @@ class StockIdDb:
         # (Number, Name, Catalog of Stock Market, Industry Property)
         cur.executescript("""
             DROP TABLE IF EXISTS StockId;
-            CREATE TABLE StockId(SNum INT, SName TEXT, SCat TEXT, SIndProp TEXT);""")
+            CREATE TABLE StockId(SNum TEXT, SName TEXT, SCat TEXT, SIndProp TEXT);""")
         con.commit()
         self.__collect_TW(cur)
         con.commit()
@@ -71,7 +71,7 @@ class StockIdDb:
             stockCat = 'TW'
             stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
             #print stockNum, stockName, stockCat, stockIndProp
-            cmd = ("INSERT INTO StockId VALUES(" + str(stockNum) + ",'" +
+            cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
             cur.executescript(cmd)
         for idx in range(idx_e, len(p)):
@@ -92,7 +92,7 @@ class StockIdDb:
             stockCat = 'TW'
             stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
             #print stockNum, stockName, stockCat, stockIndProp
-            cmd = ("INSERT INTO StockId VALUES(" + str(stockNum) + ",'" +
+            cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
             cur.executescript(cmd)
 
@@ -118,7 +118,7 @@ class StockIdDb:
             stockCat = 'TWO'
             stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
             #print stockNum, stockName, stockCat, stockIndProp
-            cmd = ("INSERT INTO StockId VALUES(" + str(stockNum) + ",'" +
+            cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
             cur.executescript(cmd)
         for idx in range(idx_e, len(p)):
@@ -138,7 +138,7 @@ class StockIdDb:
             stockCat = 'TWO'
             stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
             #print stockNum, stockName, stockCat, stockIndProp
-            cmd = ("INSERT INTO StockId VALUES(" + str(stockNum) + ",'" +
+            cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
             cur.executescript(cmd)
 
@@ -162,8 +162,8 @@ class StockIdDb:
             print "Error %s:" % e.args[0]
             sys.exit(1)
 
-        cur.execute("SELECT SName, SCat, SIndProp FROM StockId WHERE SNum=:qNum",
-                    {"qNum": Num})
+        cmd = "SELECT SName, SCat, SIndProp FROM StockId WHERE SNum='" + Num + "';"
+        cur.execute(cmd)
         row = cur.fetchone()
         if con:
             con.close()
