@@ -111,19 +111,38 @@ class genSGHtml:
             self.HtmlName = "H__" + self.HtmlName
 
         # Whether the price is growing over the average.
-        count = 0
+        count_ga = 0
+        # Whether the price is growing over the low bound of average.
+        count_gal = 0
         if self.__getClose(0) > self.__getG(0):
-            count += 1
+            count_ga += 1
+            count_gal += 1
         else:
-            count -= 1
+            count_ga -= 1
+            count_gal -= 1
         for idx in range(1, 10):
-            if (self.__getClose(idx) >= self.__getG(idx) and
-                self.__getClose(idx-1) > self.__getClose(idx)):
-                count += 1
+            if self.__getClose(idx-1) > self.__getClose(idx):
+                count_ga += 1
+                count_gal += 1
             else:
-                count -= 1
-        if count > 0:
-            print u"Caution!! Price is growing."
+                count_ga -= 1
+                count_gal -= 1
+            if self.__getClose(idx) >= self.__getG(idx):
+                count_ga += 1
+            else:
+                count_ga -= 1
+            if self.__getClose(idx) >= (self.__getG(idx) * (1.0 - self.rg/100.)):
+                count_gal += 1
+            else:
+                count_gal -= 1
+        if count_ga > 10:
+            print u"Caution!! Price is growing..."
+            self.HtmlName = "+++" + self.HtmlName
+        elif count_ga > 0:
+            print u"Caution!! Price is growing..."
+            self.HtmlName = "++" + self.HtmlName
+        elif count_gal > 0:
+            print u"Caution!! Price is growing..."
             self.HtmlName = "+" + self.HtmlName
 
 
