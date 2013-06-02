@@ -5,12 +5,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -50,7 +50,7 @@ class fetchStockData:
         except:
             self.stockId = stockId
         if self.stockId[0] != '^':
-            self.__QueryStock()
+            self.stockName, self.stockNum, self.stockCat, self.stockIndProp = StockIdDb.queryStockId(stockId)
         self.stockData = {}
         if years > 0:
             self.years = years
@@ -262,42 +262,6 @@ class fetchStockData:
                     continue;
                 self.stockData[int(d)] = [Po, Ph, Pl, Pc, V]
             b.close()
-
-    def __QueryStock(self):
-        '''
-            Query the cataglory of stock
-            .TW: http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=2
-            .TWO: http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=4
-        '''
-        sDB = StockIdDb.StockIdDb()
-        sDB.chkDB()
-        if self.stockId[0] >= '0' and self.stockId[0] <= '9':
-            idx = 0
-            for idx in range(len(self.stockId)):
-                if self.stockId[idx] >= '0' and self.stockId[idx] <= '9':
-                    idx += 1
-                else:
-                    break
-            self.stockNum = self.stockId[0:idx]
-            rst = sDB.queryByNum(self.stockNum)
-            if rst:
-                self.stockName = rst[0]
-                self.stockCat = rst[1]
-                self.stockIndProp = rst[2]
-            else:
-                print u"Query failed?"
-                raise OSError
-        else:
-            # Query by Name
-            rst = sDB.queryByName(self.stockId)
-            if rst:
-                self.stockName = self.stockId
-                self.stockNum = rst[0]
-                self.stockCat = rst[1]
-                self.stockIndProp = rst[2]
-            else:
-                print u"Query failed?"
-                raise OSError
 
 if __name__ == '__main__':
     pass

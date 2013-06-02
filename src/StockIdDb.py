@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -158,7 +158,7 @@ class StockIdDb:
             cur.executescript(cmd)
 
     def chkDB(self, force=False):
-    	if force == True:
+        if force == True:
             print "Force to refresh DB."
             self.refreshDB()
         elif os.access(self.dbLocation, os.R_OK):
@@ -204,11 +204,49 @@ class StockIdDb:
             con.close()
         return row
 
+def queryStockId(stockId = ''):
+    '''
+        Query the cataglory of stock
+        .TW: http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=2
+        .TWO: http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=4
+    '''
+    sDB = StockIdDb()
+    sDB.chkDB()
+    if stockId[0] >= '0' and stockId[0] <= '9':
+        idx = 0
+        for idx in range(len(stockId)):
+            if stockId[idx] >= '0' and stockId[idx] <= '9':
+                idx += 1
+            else:
+                break
+        stockNum = stockId[0:idx]
+        rst = sDB.queryByNum(stockNum)
+        if rst:
+            stockName = rst[0]
+            stockCat = rst[1]
+            stockIndProp = rst[2]
+        else:
+            print u"Query failed?"
+            raise OSError
+    else:
+        # Query by Name
+        rst = sDB.queryByName(stockId)
+        if rst:
+            stockName = stockId
+            stockNum = rst[0]
+            stockCat = rst[1]
+            stockIndProp = rst[2]
+        else:
+            print u"Query failed?"
+            raise OSError
+    return stockName, stockNum, stockCat, stockIndProp
 
 def main(argv=None):
     db = StockIdDb()
     db.chkDB()
-    db.refreshDB()
+    # Force to refreshDB
+    #db.refreshDB()
+    print "stockName: %s, stockNum: %s, stockCat: %s, stockIndProp: %s" % queryStockId('1301')
     return
 
 if __name__ == '__main__':
