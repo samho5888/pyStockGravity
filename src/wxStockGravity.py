@@ -5,12 +5,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -24,6 +24,7 @@ import webbrowser
 
 from fetchStockData import fetchStockData
 from genHTML import genSGHtml
+from TData import *
 
 
 class wxStockGravity(wx.Frame):
@@ -111,9 +112,11 @@ class wxStockGravity(wx.Frame):
         self.btnShowIt.SetLabel('In Progress')
         self.btnShowIt.Disable()
         try:
+            td = TData(sID)
             # Fetcing data
             stkData = fetchStockData(stockId = sID,
-                                     years=(self.choice_Year.GetCurrentSelection() +1))
+                                     years=(self.choice_Year.GetCurrentSelection() +1),
+                                     stockData = td)
             if self.SG_Server.GetSelection() == 0:
                 # By end-notation
                 stkData.fetchData()
@@ -121,7 +124,7 @@ class wxStockGravity(wx.Frame):
                 # Yahoo
                 stkData.fetchData('Yahoo')
 
-            if len(stkData.stockData) < 120:
+            if td.getTCount() < 120:
                 wx.MessageBox('Too few data for decision-making: ' + str(len(stkData.stockData)),
                               'Error', wx.OK | wx.ICON_INFORMATION)
                 self.btnShowIt.SetLabel('Show it')
@@ -169,6 +172,7 @@ class wxStockGravity(wx.Frame):
         #print fn
         webbrowser.open_new_tab(fn)
 
+        del td
         del stkData
         del stkHtml
         self.btnShowIt.SetLabel('Show it')

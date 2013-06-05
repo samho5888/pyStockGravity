@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: cp950 -*-
+# -*- coding: utf-8 -*-
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,12 +26,13 @@ import csv
 
 # Local library
 import StockIdDb
+from TData import *
 
 class fetchStockData:
     ''' Fetching historical data from Yahoo, TWSE, TWO '''
     # Stock price data in
     # stockData[int('YYYYMMDD')] = [Open, High, Low, Close, Volume]
-    #stockData = {}
+    # stockData is instance reference of TData
 
     # e.g. 1301.TW
     stockId = ''
@@ -43,7 +44,10 @@ class fetchStockData:
     stockIndProp = ''
     years = 2
 
-    def __init__(self, stockId = '2002.TW', years = 2):
+    def __init__(self, stockId = '2002.TW', years = 2, stockData = None):
+        if isinstance(stockData, TData) is not True:
+            print u"Incorrect stock data"
+            raise ValueError
         try:
             # Using unicode.
             self.stockId = stockId.decode('cp950').encode('utf8')
@@ -51,7 +55,7 @@ class fetchStockData:
             self.stockId = stockId
         if self.stockId[0] != '^':
             self.stockName, self.stockNum, self.stockCat, self.stockIndProp = StockIdDb.queryStockId(stockId)
-        self.stockData = {}
+        self.stockData = stockData
         if years > 0:
             self.years = years
         else:
@@ -74,22 +78,22 @@ class fetchStockData:
 
         if SId == 'TW':
             self.__fetchTW()
-            if len(self.stockData) == 0:
+            if self.stockData.getTCount() == 0:
                 # Try TWO
                 self.__fetchTWO()
-                if len(self.stockData) > 0:
+                if self.stockData.getTCount() > 0:
                     self.stockId = str(self.stockNum) + '.TWO'
         elif SId == 'TWO':
             self.__fetchTWO()
-            if len(self.stockData) == 0:
+            if self.stockData.getTCount() == 0:
                 # Try TW
                 self.__fetchTW()
-                if len(self.stockData) > 0:
+                if self.stockData.getTCount() > 0:
                     self.stockId = str(self.stockNum) + '.TW'
         else:
             self.__fetchYahoo()
 
-        if len(self.stockData) <= 0:
+        if self.stockData.getTCount() <= 0:
             print u"Fetching " + str(self.stockId) + ' failed\n'
 
     def _countDuration(self, D):
@@ -137,7 +141,11 @@ class fetchStockData:
         for idx in range(7, len(urlData), 7):
             d = urlData[idx]
             d = string.split(d, '-')
-            d = str(int(d[0]) - 1911) + d[1] + d[2]
+            if False:
+                # Use ROC year
+                d = str(int(d[0]) - 1911) + d[1] + d[2]
+            else:
+                d = str(int(d[0])) + d[1] + d[2]
             try:
                 V = int(urlData[idx + 5])
                 Po = float(urlData[idx + 1])
@@ -145,8 +153,8 @@ class fetchStockData:
                 Pl = float(urlData[idx + 3])
                 Pc = float(urlData[idx + 4])
             except:
-                continue;
-            self.stockData[int(d)] = [Po, Ph, Pl, Pc, V]
+                continue
+            self.stockData.add(int(d), Po, Ph, Pl, Pc, V)
 
     def __fetchTW(self):
         '''
@@ -173,17 +181,18 @@ class fetchStockData:
                 continue
 
             # Format is:
-            # ¤é´Á,¦¨¥æªÑ¼Æ,¦¨¥æª÷ÃB,¶}½L»ù,³Ì°ª»ù,³Ì§C»ù,¦¬½L»ù,º¦¶^»ù®t,¦¨¥æµ§¼Æ
+            # æ—¥æœŸ,æˆäº¤è‚¡æ•¸,æˆäº¤é‡‘é¡,é–‹ç›¤åƒ¹,æœ€é«˜åƒ¹,æœ€ä½Žåƒ¹,æ”¶ç›¤åƒ¹,æ¼²è·Œåƒ¹å·®,æˆäº¤ç­†æ•¸
             # 101/04/02,"5,100,968","437,884,353",86.90,86.90,85.20,85.20,-1.70,"2,129"
             # Not using uni-code here.
             #
-            #   99¦~09¤ë 2002 ¤¤¿û ¤é¦¬½L»ù¤Î¤ë¥­§¡¦¬½L»ù(¤¸)
-            #   ¤é´Á,¦¬½L»ù
+            #   99å¹´09æœˆ 2002 ä¸­é‹¼ æ—¥æ”¶ç›¤åƒ¹åŠæœˆå¹³å‡æ”¶ç›¤åƒ¹(å…ƒ)
+            #   æ—¥æœŸ,æ”¶ç›¤åƒ¹
             #    99/09/01,"30.30"
             #    99/09/02,"30.40"
-            #   ¤ë¥­§¡¦¬½L»ù,31.84
-            #   »¡©ú¡G¥H¤W¦¨¥æ¸ê®Æ±Ä¥«³õ¥æ©ö®É¶¡¤§¸ê®Æ­pºâ¡C
-            urlData = string.split(the_page, '¦¨¥æµ§¼Æ\n')
+            #   æœˆå¹³å‡æ”¶ç›¤åƒ¹,31.84
+            #   èªªæ˜Žï¼šä»¥ä¸Šæˆäº¤è³‡æ–™æŽ¡å¸‚å ´äº¤æ˜“æ™‚é–“ä¹‹è³‡æ–™è¨ˆç®—ã€‚
+            uthe_page = unicode(the_page, 'cp950')
+            urlData = string.split(uthe_page, u'æˆäº¤ç­†æ•¸\n')
             urlData = urlData[1]
 
             b = StringIO(urlData)
@@ -200,8 +209,13 @@ class fetchStockData:
                     Pl = float(row[5])
                     Pc = float(row[6])
                 except:
-                    continue;
-                self.stockData[int(d)] = [Po, Ph, Pl, Pc, V]
+                    continue
+                if False:
+                    # Use ROC year
+                    self.stockData.add(int(d), Po, Ph, Pl, Pc, V)
+                else:
+                    strd = str(int(d[:3]) + 1911) + d[-4:]
+                    self.stockData.add(int(strd), Po, Ph, Pl, Pc, V)
             b.close()
 
     def __fetchTWO(self):
@@ -225,15 +239,16 @@ class fetchStockData:
                 continue
 
             # Format is:
-            #   ¤WÂd­ÓªÑ¤é¦¨¥æ¸ê°T¬d¸ß\n
-            #   ªÑ²¼¥N½X,4123\n
-            #   ªÑ²¼¦WºÙ,ÑÔ¼w\n
-            #   ¸ê®Æ¤ë¥÷,2011¦~12¤ë\n
-            #   ¤é´Á,¦¨¥æ¥aªÑ,¦¨¥æ¥a¤¸,¶}½L,³Ì°ª,³Ì§C,¦¬½L,º¦¶^,µ§¼Æ\n
+            #   ä¸Šæ«ƒå€‹è‚¡æ—¥æˆäº¤è³‡è¨ŠæŸ¥è©¢\n
+            #   è‚¡ç¥¨ä»£ç¢¼,4123\n
+            #   è‚¡ç¥¨åç¨±,æ™Ÿå¾·\n
+            #   è³‡æ–™æœˆä»½,2011å¹´12æœˆ\n
+            #   æ—¥æœŸ,æˆäº¤ä»Ÿè‚¡,æˆäº¤ä»Ÿå…ƒ,é–‹ç›¤,æœ€é«˜,æœ€ä½Ž,æ”¶ç›¤,æ¼²è·Œ,ç­†æ•¸\n
             #   "1000901","52","2,084","39.70","40.10","39.50","39.80","0.40","48"\n
             #   "1000902","26","1,012","39.50","39.80","39.50","39.70","-0.10","18"\n
             # Not using uni-code here.
-            urlData = string.split(the_page, 'µ§¼Æ\n')
+            uthe_page = unicode(the_page, 'cp950')
+            urlData = string.split(uthe_page, u'ç­†æ•¸\n')
             if len(urlData[1]) < 2:
                 continue
             urlData = urlData[1]
@@ -253,15 +268,32 @@ class fetchStockData:
                 Pc = string.replace(row[6], ',', '')
                 Pc = string.replace(Pc, '"', '')
                 try:
-                    V = int(V) * 1000;
-                    Po = float(Po);
-                    Ph = float(Ph);
-                    Pl = float(Pl);
-                    Pc = float(Pc);
+                    V = int(V) * 1000
+                    Po = float(Po)
+                    Ph = float(Ph)
+                    Pl = float(Pl)
+                    Pc = float(Pc)
                 except:
-                    continue;
-                self.stockData[int(d)] = [Po, Ph, Pl, Pc, V]
+                    continue
+                if False:
+                    # Use ROC year
+                    self.stockData.add(int(d), Po, Ph, Pl, Pc, V)
+                else:
+                    strd = str(int(d[:3]) + 1911) + d[-4:]
+                    self.stockData.add(int(strd), Po, Ph, Pl, Pc, V)
             b.close()
 
+#
+# Test case
+#
+
+def main(argv=None):
+    stockId = '2002.TW'
+    td = TData(stockId)
+    fd = fetchStockData(stockId = stockId, years = 1, stockData = td)
+#    fd.fetchData(svrId = 'Yahoo')
+    fd.fetchData()
+    print td.getMean(mean = 5, PorV = 0)
+
 if __name__ == '__main__':
-    pass
+    sys.exit(main())

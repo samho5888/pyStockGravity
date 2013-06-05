@@ -1,16 +1,16 @@
 #!/usr/bin/python
-# -*- coding: cp950 -*-
+# -*- coding: utf-8 -*-
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -20,6 +20,8 @@ import string
 
 import datetime
 import calendar
+
+from TData import *
 
 class genSGHtml:
     ''' Generate Stock-Gravity HTML by using Google or Highstock libraries. '''
@@ -226,7 +228,7 @@ class genSGHtml:
             d.append(sd[sl-4:sl-2])
             d.append(sd[sl-2:sl])
             # Note: Month from 0
-            s = '                    [ new Date(' + str(int(d[0]) + 1911) + ', ' + str(int(d[1]) - 1) + ', ' + str(d[2]) + '), '
+            s = '                    [ new Date(' + str(int(d[0])) + ', ' + str(int(d[1]) - 1) + ', ' + str(d[2]) + '), '
             s += str(self.__getClose(i)) + ', '
             s += (str(self.__getG(i)) + ', ' +
                  str(self.__getG(i) * (1.0 - self.rg/100.)) + ', ' +
@@ -298,7 +300,7 @@ class genSGHtml:
             d.append(sd[sl-4:sl-2])
             d.append(sd[sl-2:sl])
             # Date
-            Sd = datetime.datetime(int(d[0]) + 1911, int(d[1]), int(d[2]))
+            Sd = datetime.datetime(int(d[0]), int(d[1]), int(d[2]))
             St = calendar.timegm(Sd.utctimetuple()) * 1000
             # stockAll is [YYYYMMDD, [Open, High, Low, Close, Volume], Avg05, Avg20, Avg60, Gravity]
             # Date, [open, high, low, close, volume], Avg, Avg_l, Avg_h
@@ -514,10 +516,10 @@ class genSGHtml:
 
             form: 'Google' or 'Highstock'
             stockAll is [YYYYMMDD, [Open, High, Low, Close, Volume], Avg05, Avg20, Avg60, Gravity] '''
-        if stockData is None:
+        if isinstance(stockData, TData) is not True:
+            print u"Incorrect stock data"
             self.HtmlName = None
-            print u"Invalid data."
-            return
+            raise ValueError
 
         self.__genAvgData(stockData)
         if form == 'Google':
@@ -529,4 +531,3 @@ class genSGHtml:
 
 if __name__ == '__main__':
     pass
-

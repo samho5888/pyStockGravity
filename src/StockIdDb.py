@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: cp950 -*-
+# -*- coding: utf-8 -*-
 
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 import sys
 import os
 
+import urllib
 from pyquery import PyQuery as pq
 import sqlite3
 
@@ -64,17 +65,22 @@ class StockIdDb:
             con.close()
 
     def __collect_TW(self, cur):
-        d = pq(url='http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=2')
+        if True:
+            f = urllib.urlopen('http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=2')
+            s = f.read()
+            f.close()
+            d = pq(unicode(s, 'cp950'))
+        else:
+            d = pq(url='http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=2')
         p = d('td')
         idx_s = 0
         idx_e = 0
         for idx in range(len(p)):
             if p.eq(idx).html() != None:
                 if p.eq(idx).find('b') != []:
-                    p.eq(idx).find('b').text().encode('latin1')
-                    if p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"™—≤º":
+                    if p.eq(idx).find('b').text() == u"ËÇ°Á•®":
                         idx_s = idx + 1
-                    elif p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"§W•´ª{¡ (∞‚)≈v√“":
+                    elif p.eq(idx).find('b').text() == u"‰∏äÂ∏ÇË™çË≥º(ÂîÆ)Ê¨äË≠â":
                         idx_e = idx - 1
         #print idx_s
         #print idx_e
@@ -82,9 +88,9 @@ class StockIdDb:
             t = p.eq(idx).text()
             ts = t.split()
             stockNum = ts[0]
-            stockName = ts[1][2:].encode('latin1').decode('cp950')
+            stockName = ts[1]
             stockCat = 'TW'
-            stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
+            stockIndProp =  p.eq(idx+4).text()
             #print stockNum, stockName, stockCat, stockIndProp
             cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
@@ -92,10 +98,9 @@ class StockIdDb:
         for idx in range(idx_e, len(p)):
             if p.eq(idx).html() != None:
                 if p.eq(idx).find('b') != []:
-                    p.eq(idx).find('b').text().encode('latin1')
-                    if p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"ETF":
+                    if p.eq(idx).find('b').text() == u"ETF":
                         idx_s = idx + 1
-                    elif p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"ªO∆W¶s∞UæÃ√“":
+                    elif p.eq(idx).find('b').text() == u"Ëá∫ÁÅ£Â≠òË®óÊÜëË≠â":
                         idx_e = idx - 1
         #print idx_s
         #print idx_e
@@ -103,25 +108,31 @@ class StockIdDb:
             t = p.eq(idx).text()
             ts = t.split()
             stockNum = ts[0]
-            stockName = ts[1][2:].encode('latin1').decode('cp950')
+            stockName = ts[1]
             stockCat = 'TW'
-            stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
+            stockIndProp =  p.eq(idx+4).text()
             #print stockNum, stockName, stockCat, stockIndProp
             cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
             cur.executescript(cmd)
 
     def __collect_TWO(self, cur):
-        d = pq(url='http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=4')
+        if True:
+            f = urllib.urlopen('http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=4')
+            s = f.read()
+            f.close()
+            d = pq(unicode(s, 'cp950'))
+        else:
+            d = pq(url='http://brk.tse.com.tw:8000/isin/C_public.jsp?strMode=4')
         p = d('td')
         idx_s = 0
         idx_e = 0
         for idx in range(len(p)):
             if p.eq(idx).html() != None:
                 if p.eq(idx).find('b') != []:
-                    if p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"ETF":
+                    if p.eq(idx).find('b').text() == u"ETF":
                         idx_s = idx + 1
-                    elif p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"™—≤º":
+                    elif p.eq(idx).find('b').text() == u"ËÇ°Á•®":
                         idx_e = idx - 1
         #print idx_s
         #print idx_e
@@ -129,9 +140,9 @@ class StockIdDb:
             t = p.eq(idx).text()
             ts = t.split()
             stockNum = ts[0]
-            stockName = ts[1][2:].encode('latin1').decode('cp950')
+            stockName = ts[1]
             stockCat = 'TWO'
-            stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
+            stockIndProp =  p.eq(idx+4).text()
             #print stockNum, stockName, stockCat, stockIndProp
             cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
@@ -139,9 +150,9 @@ class StockIdDb:
         for idx in range(idx_e, len(p)):
             if p.eq(idx).html() != None:
                 if p.eq(idx).find('b') != []:
-                    if p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"™—≤º":
+                    if p.eq(idx).find('b').text() == u"ËÇ°Á•®":
                         idx_s = idx + 1
-                    elif p.eq(idx).find('b').text().encode('latin1').decode('cp950') == u"ªO∆W¶s∞UæÃ√“":
+                    elif p.eq(idx).find('b').text() == u"Ëá∫ÁÅ£Â≠òË®óÊÜëË≠â":
                         idx_e = idx - 1
         #print idx_s
         #print idx_e
@@ -149,9 +160,9 @@ class StockIdDb:
             t = p.eq(idx).text()
             ts = t.split()
             stockNum = ts[0]
-            stockName = ts[1][2:].encode('latin1').decode('cp950')
+            stockName = ts[1]
             stockCat = 'TWO'
-            stockIndProp =  p.eq(idx+4).text().encode('latin1').decode('cp950')
+            stockIndProp =  p.eq(idx+4).text()
             #print stockNum, stockName, stockCat, stockIndProp
             cmd = ("INSERT INTO StockId VALUES('" + str(stockNum) + "','" +
                    stockName + "','" + stockCat + "','" + stockIndProp + "')")
@@ -247,6 +258,7 @@ def main(argv=None):
     # Force to refreshDB
     #db.refreshDB()
     print "stockName: %s, stockNum: %s, stockCat: %s, stockIndProp: %s" % queryStockId('1301')
+    print "stockName: %s, stockNum: %s, stockCat: %s, stockIndProp: %s" % queryStockId(u'Êñ∞ÊôÆ')
     return
 
 if __name__ == '__main__':
