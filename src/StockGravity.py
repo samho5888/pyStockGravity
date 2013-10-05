@@ -21,6 +21,7 @@ import argparse
 
 from fetchStockData import fetchStockData
 from genHTML import genSGHtml
+from TData import *
 
 def testCase():
     d = fetchStockData(stockId = '1301.TW', years = 2)
@@ -61,19 +62,20 @@ def main(argv=None):
         parser.parse_args('-h'.split())
         return
 
-    d = fetchStockData(stockId = args.SID, years=args.years)
+    td = TData(args.SID)
+    d = fetchStockData(stockId = args.SID, years = args.years, stockData = td)
     if args.yahoo:
         d.fetchData('Yahoo')
     else:
         d.fetchData()
 
-    if len(d.stockData) < 120:
+    if td.getTCount() < 120:
         print u'Too few data for decision-making: %d' % len(d.stockData)
     else:
-        if d.stockId[0] == '^':
-            sID = d.stockId
-        else:
+        if d.stockCat != '':
             sID = str(d.stockNum) + '.' + d.stockCat
+        else:
+            sID = d.stockId
         h = genSGHtml(stockId = sID,
                       stockName = d.stockName,
                       stockIndProp = d.stockIndProp,

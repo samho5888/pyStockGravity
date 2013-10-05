@@ -131,10 +131,10 @@ class wxStockGravity(wx.Frame):
                 self.btnShowIt.Enable()
                 return
             else:
-                if stkData.stockId[0] == '^':
-                    sID = stkData.stockId
-                else:
+                if stkData.stockCat != '':
                     sID = str(stkData.stockNum) + '.' + stkData.stockCat
+                else:
+                    sID = stkData.stockId
                 # Generate Stock-Gravity HTML
                 stkHtml = genSGHtml(stockId = sID,
                                     stockName = stkData.stockName,

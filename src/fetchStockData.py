@@ -53,8 +53,6 @@ class fetchStockData:
             self.stockId = stockId.decode('cp950').encode('utf8')
         except:
             self.stockId = stockId
-        if self.stockId[0] != '^':
-            self.stockName, self.stockNum, self.stockCat, self.stockIndProp = StockIdDb.queryStockId(stockId)
         self.stockData = stockData
         if years > 0:
             self.years = years
@@ -77,6 +75,7 @@ class fetchStockData:
                 SId = self.stockCat
 
         if SId == 'TW':
+            self.stockName, self.stockNum, self.stockCat, self.stockIndProp = StockIdDb.queryStockId(stockId)
             self.__fetchTW()
             if self.stockData.getTCount() == 0:
                 # Try TWO
@@ -84,6 +83,7 @@ class fetchStockData:
                 if self.stockData.getTCount() > 0:
                     self.stockId = str(self.stockNum) + '.TWO'
         elif SId == 'TWO':
+            self.stockName, self.stockNum, self.stockCat, self.stockIndProp = StockIdDb.queryStockId(stockId)
             self.__fetchTWO()
             if self.stockData.getTCount() == 0:
                 # Try TW
@@ -111,10 +111,10 @@ class fetchStockData:
     def __fetchYahoo(self):
         today = date.today()
 
-        if self.stockId[0] == '^':
-            sid = self.stockId
-        else:
+        if self.stockCat != '':
             sid = str(self.stockNum) + '.' + self.stockCat
+        else:
+            sid = self.stockId
         csvFile = 'http://ichart.finance.yahoo.com/table.csv?s=' + str(sid)
         csvFile += '&a=' + str(today.month)
         csvFile += '&b=' + str(today.day)
