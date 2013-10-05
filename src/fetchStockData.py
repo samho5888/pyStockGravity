@@ -5,12 +5,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -49,8 +49,6 @@ class fetchStockData:
             self.stockId = stockId.decode('cp950').encode('utf8')
         except:
             self.stockId = stockId
-        if self.stockId[0] != '^':
-            self.__QueryStock()
         self.stockData = {}
         if years > 0:
             self.years = years
@@ -73,6 +71,7 @@ class fetchStockData:
                 SId = self.stockCat
 
         if SId == 'TW':
+            self.__QueryStock()
             self.__fetchTW()
             if len(self.stockData) == 0:
                 # Try TWO
@@ -80,6 +79,7 @@ class fetchStockData:
                 if len(self.stockData) > 0:
                     self.stockId = str(self.stockNum) + '.TWO'
         elif SId == 'TWO':
+            self.__QueryStock()
             self.__fetchTWO()
             if len(self.stockData) == 0:
                 # Try TW
@@ -107,10 +107,10 @@ class fetchStockData:
     def __fetchYahoo(self):
         today = date.today()
 
-        if self.stockId[0] == '^':
-            sid = self.stockId
-        else:
+        if self.stockCat != '':
             sid = str(self.stockNum) + '.' + self.stockCat
+        else:
+            sid = self.stockId
         csvFile = 'http://ichart.finance.yahoo.com/table.csv?s=' + str(sid)
         csvFile += '&a=' + str(today.month)
         csvFile += '&b=' + str(today.day)
